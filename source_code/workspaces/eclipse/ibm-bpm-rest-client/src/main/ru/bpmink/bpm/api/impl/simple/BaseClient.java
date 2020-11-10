@@ -147,7 +147,7 @@ abstract class BaseClient {
 			
 			InputStream content = response.getEntity().getContent();	
 			
-			File file = new File("processDetail.json");			
+			File file = new File("processDetail1.json");			
 			 
 		    FileUtils.copyInputStreamToFile(content, file);
 			
