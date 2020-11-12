@@ -6,6 +6,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.omg.PortableServer.SERVANT_RETENTION_POLICY_ID;
 
+import com.google.gson.JsonElement;
+
 import ru.bpmink.bpm.model.other.exposed.Item;
 import ru.bpmink.util.SafeUriBuilder;
 
@@ -34,14 +36,14 @@ public class LogClientImpl extends BaseClient implements LogClient {
 	}
 
 	@Override
-	public String getInstances(String hCsrfToken, String qModifiedAfter, String qModifiedBefore, String qProjectFilter,
+	public JsonElement getInstances(String hCsrfToken, String qModifiedAfter, String qModifiedBefore, String qProjectFilter,
 			String qUserFilter, String qSearchFilter, String qStatusFilter) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String getInstances(String hCsrfToken, String qModifiedAfter, String qModifiedBefore,
+	public JsonElement getInstances(String hCsrfToken, String qModifiedAfter, String qModifiedBefore,
 			String qProjectFilter) {
 		
 //		URI uri = new SafeUriBuilder(rootUri).addPath(SEARCH_INSTANCE_ENDPOINT).addParameter(MODIFIED_AFTER_QUERY, qModifiedAfter).addParameter(MODIFIED_BEFORE_QUERY, qModifiedBefore).build();
@@ -50,7 +52,7 @@ public class LogClientImpl extends BaseClient implements LogClient {
 	}
 
 	@Override
-	public String getInstanceDetail(String hCsrfToken, String pPiid, String qSystemId) {
+	public JsonElement getInstanceDetail(String hCsrfToken, String pPiid, String qSystemId) {
 		
 		URI uri = new SafeUriBuilder(rootUri).addPath(INSTANCE_DETAIL_ENDPOINT).addPath(pPiid).addParameter(SYSTEM_ID_QUERY, qSystemId).build();
 		return makeGet(httpClient, httpContext, uri, hCsrfToken);

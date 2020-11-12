@@ -108,31 +108,9 @@ abstract class BaseClient {
 			logger.debug("Response body: " + body);
 		}
 	}
-
-	/**
-	 * Process {@literal GET} request for given endpoint with specified in
-	 * {@literal httpClient} and {@literal httpContext} configuration. Given
-	 * {@literal typeToken} determines the response entity generic type.
-	 *
-	 * @param httpClient  {@link org.apache.http.client.HttpClient} instance,
-	 *                    configured for request.
-	 * @param httpContext {@link org.apache.http.protocol.HttpContext} instance,
-	 *                    configured for request. It's optional parameter. If
-	 *                    {@literal null} passed as {@literal httpContext}, default
-	 *                    instance of
-	 *                    {@link org.apache.http.protocol.BasicHttpContext} will be
-	 *                    created.
-	 * @param endpoint    Endpoint uri {@link java.net.URI}
-	 * @param typeToken   Represents a generic type that will be returned as
-	 *                    {@link ru.bpmink.bpm.model.common.RestRootEntity} generic
-	 *                    parameter.
-	 * @param <T>         {@link ru.bpmink.bpm.model.common.RestRootEntity} generic
-	 *                    parameter class.
-	 * @return {@link ru.bpmink.bpm.model.common.RestRootEntity} instance, which
-	 *         holds entity of specified by {@literal <T>} type.
-	 */
 	
-	protected String makeGet(@Nonnull HttpClient httpClient, @Nullable HttpContext httpContext,
+	// GET - CsrfToken
+	protected JsonElement makeGet(@Nonnull HttpClient httpClient, @Nullable HttpContext httpContext,
 			@Nonnull URI endpoint, @Nonnull String csrfToken) {
 		try {
 
@@ -146,16 +124,16 @@ abstract class BaseClient {
 			HttpResponse response = httpClient.execute(request, httpContext);
 			
 			InputStream content = response.getEntity().getContent();	
+			InputStreamReader reader = new InputStreamReader(content);
+			JsonElement result = new Gson().fromJson(reader, JsonElement.class);
 			
-			File file = new File("processDetail1.json");			
-			 
-		    FileUtils.copyInputStreamToFile(content, file);
-			
+//			File file = new File("processDetail1.json");
+//		    FileUtils.copyInputStreamToFile(content, file);
 //			String result = Utils.inputStreamToString(content);			
 
 			request.releaseConnection();
 
-			return "SUCCESS";
+			return result;
 		} catch (IOException e) {
 			logger.error("Can't update Entity object from Server with uri " + endpoint, e);
 			e.printStackTrace();

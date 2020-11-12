@@ -1,11 +1,13 @@
 package ru.bpmink.bpm.api.impl.simple;
 
+import com.google.gson.JsonElement;
+
 public interface LogClient {
 	
-	String getInstances(String hCsrfToken, String qModifiedAfter, String qModifiedBefore, String qProjectFilter, String qUserFilter,
+	JsonElement getInstances(String hCsrfToken, String qModifiedAfter, String qModifiedBefore, String qProjectFilter, String qUserFilter,
 			String qSearchFilter, String qStatusFilter);
 	
-	String getInstances(String hCsrfToken, String qModifiedAfter, String qModifiedBefore, String qProjectFilter);
+	JsonElement getInstances(String hCsrfToken, String qModifiedAfter, String qModifiedBefore, String qProjectFilter);
 
-	String getInstanceDetail(String hCsrfToken, String pPiid, String qSystemId);
+	JsonElement getInstanceDetail(String hCsrfToken, String pPiid, String qSystemId);
 }
