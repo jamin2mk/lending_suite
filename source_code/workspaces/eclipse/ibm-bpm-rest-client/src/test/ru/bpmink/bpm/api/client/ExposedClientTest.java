@@ -32,8 +32,9 @@ public class ExposedClientTest {
 	public static void main(String[] args) {
 		ExposedClientTest client = new ExposedClientTest();
 		client.initializeClient();
+		
 //		client.exposedItemsFetch();
-		client.login();
+//		client.login();
 		try {
 			client.closeClient();
 		} catch (IOException e) {
@@ -46,7 +47,6 @@ public class ExposedClientTest {
     private BpmClient bpmClient;
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    @BeforeClass
     public void initializeClient() {
     	
         final URL url = Resources.getResource("server.properties");
@@ -60,6 +60,8 @@ public class ExposedClientTest {
             final String serverUrl = properties.getProperty("default.url");
             final String user = properties.getProperty("default.user");
             final String password = properties.getProperty("default.password");
+            
+            System.out.println(String.format("%s - %s - %s", serverUrl, user, password));
             bpmClient = BpmClientFactory.createClient(serverUrl, user, password);
             
         } catch (IOException e) {
@@ -69,12 +71,11 @@ public class ExposedClientTest {
         }
     }
 
-    @AfterClass
     public void closeClient() throws IOException {
         Closeables.close(bpmClient, true);
     }
     
-    @Test
+    
     public void exposedItemsFetch() {
         RestRootEntity<ExposedItems> entity = bpmClient.getExposedClient().listItems();
         logger.info(entity.describe());
@@ -90,7 +91,7 @@ public class ExposedClientTest {
         }
     }
 
-    @Test
+    
     public void exposedItemsByTypeReportFetch() {
         RestRootEntity<ExposedItems> entity = bpmClient.getExposedClient().listItems(ItemType.REPORT);
         logger.info(entity.describe());

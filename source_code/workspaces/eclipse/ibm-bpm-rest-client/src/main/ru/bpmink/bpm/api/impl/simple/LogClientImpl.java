@@ -1,14 +1,16 @@
 package ru.bpmink.bpm.api.impl.simple;
 
 import java.net.URI;
+import java.util.Date;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.protocol.HttpContext;
-import org.omg.PortableServer.SERVANT_RETENTION_POLICY_ID;
 
+import com.common.Const;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
-import ru.bpmink.bpm.model.other.exposed.Item;
 import ru.bpmink.util.SafeUriBuilder;
 
 public class LogClientImpl extends BaseClient implements LogClient {
@@ -16,14 +18,6 @@ public class LogClientImpl extends BaseClient implements LogClient {
 	private final URI rootUri;
 	private final HttpClient httpClient;
 	private final HttpContext httpContext;
-	
-	private static final String SEARCH_INSTANCE_ENDPOINT = "rest/bpm/wle/v1/processes/search";
-	private static final String INSTANCE_DETAIL_ENDPOINT = "rest/bpm/federated/bfm/v1/process";
-	
-	private static final String PROJECT_FILTER_QUERY = "projectFilter";
-	private static final String MODIFIED_AFTER_QUERY = "modifiedAfter";
-	private static final String MODIFIED_BEFORE_QUERY = "modifiedBefore";	
-	private static final String SYSTEM_ID_QUERY = "systemID";
 
 	LogClientImpl(URI rootUri, HttpClient httpClient, HttpContext httpContext) {
 		this.httpClient = httpClient;
@@ -36,25 +30,46 @@ public class LogClientImpl extends BaseClient implements LogClient {
 	}
 
 	@Override
-	public JsonElement getInstances(String hCsrfToken, String qModifiedAfter, String qModifiedBefore, String qProjectFilter,
-			String qUserFilter, String qSearchFilter, String qStatusFilter) {
-		// TODO Auto-generated method stub
-		return null;
+	public JsonArray getInstances(String hCsrfToken, Date qModifiedAfter, Date qModifiedBefore, String qProjectFilter,
+			String qSeachFilter, String qUserFilter, String qStatusFilter) {
+
+		SafeUriBuilder safeUriBuilder = new SafeUriBuilder(rootUri).addPath(Const.SEARCH_INSTANCE_ENDPOINT);
+
+		if (qModifiedAfter != null) {
+			safeUriBuilder.addParameter(Const.MODIFIED_AFTER_QUERY, qModifiedAfter, Const.BPM_DATE_FORMAT);
+		}
+		if (qModifiedBefore != null) {
+			safeUriBuilder.addParameter(Const.MODIFIED_BEFORE_QUERY, qModifiedBefore, Const.BPM_DATE_FORMAT);
+		}
+		if (qProjectFilter != null && !qProjectFilter.trim().isEmpty()) {
+			safeUriBuilder.addParameter(Const.PROJECT_FILTER_QUERY, qProjectFilter);
+		}
+		if (qSeachFilter != null && !qSeachFilter.trim().isEmpty()) {
+			safeUriBuilder.addParameter(Const.SEARCH_FILTER_QUERY, qSeachFilter);
+		}
+		if (qUserFilter != null && !qUserFilter.trim().isEmpty()) {
+			safeUriBuilder.addParameter(Const.USER_FILTER_QUERY, qUserFilter);
+		}
+		if (qStatusFilter != null && !qStatusFilter.trim().isEmpty()) {
+			safeUriBuilder.addParameter(Const.STATUS_FILTER_QUERY, qStatusFilter);
+		}
+
+		URI uri = safeUriBuilder.build();
+		JsonElement entity = makeGet(httpClient, httpContext, uri, hCsrfToken);
+
+		JsonObject data = entity.getAsJsonObject().get("data").getAsJsonObject();
+		JsonArray instanceList = data.get("processes").getAsJsonArray();
+
+		return instanceList;
 	}
 
 	@Override
-	public JsonElement getInstances(String hCsrfToken, String qModifiedAfter, String qModifiedBefore,
-			String qProjectFilter) {
-		
-//		URI uri = new SafeUriBuilder(rootUri).addPath(SEARCH_INSTANCE_ENDPOINT).addParameter(MODIFIED_AFTER_QUERY, qModifiedAfter).addParameter(MODIFIED_BEFORE_QUERY, qModifiedBefore).build();
-		URI uri = new SafeUriBuilder(rootUri).addPath(SEARCH_INSTANCE_ENDPOINT).addParameter(PROJECT_FILTER_QUERY, qProjectFilter).addParameter("statusFilter", "Completed").build();
-		return makeGet(httpClient, httpContext, uri, hCsrfToken);
-	}
+	public JsonObject getInstanceDetail(String hCsrfToken, String pPiid, String qSystemId) {
 
-	@Override
-	public JsonElement getInstanceDetail(String hCsrfToken, String pPiid, String qSystemId) {
-		
-		URI uri = new SafeUriBuilder(rootUri).addPath(INSTANCE_DETAIL_ENDPOINT).addPath(pPiid).addParameter(SYSTEM_ID_QUERY, qSystemId).build();
-		return makeGet(httpClient, httpContext, uri, hCsrfToken);
+		URI uri = new SafeUriBuilder(rootUri).addPath(Const.INSTANCE_DETAIL_ENDPOINT).addPath(pPiid)
+				.addParameter(Const.SYSTEM_ID_QUERY, qSystemId).build();
+
+		JsonObject entity = makeGet(httpClient, httpContext, uri, hCsrfToken).getAsJsonObject();
+		return entity;
 	}
 }

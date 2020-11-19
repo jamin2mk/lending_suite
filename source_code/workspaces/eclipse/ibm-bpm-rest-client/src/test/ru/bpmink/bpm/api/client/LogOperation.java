@@ -3,6 +3,7 @@ package ru.bpmink.bpm.api.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Date;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -57,8 +58,7 @@ public class LogOperation {
 	private BpmClient bpmClient;
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
-	@BeforeClass
-	public void initializeClient() {
+	private void initializeClient() {
 
 		final URL url = Resources.getResource("server.properties");
 		final ByteSource byteSource = Resources.asByteSource(url);
@@ -80,26 +80,22 @@ public class LogOperation {
 		}
 	}
 
-	@AfterClass
-	public void closeClient() throws IOException {
+	private void closeClient() throws IOException {
 		Closeables.close(bpmClient, true);
 	}
 
-	public JsonElement searchInstances(String hCsrfToken, String qModifiedAfter, String qModifiedBefore,
-			String qProjectFilter) {
+	public JsonElement searchInstances(String hCsrfToken, Date qModifiedAfter, Date qModifiedBefore,
+			String qProjectFilter, String qInstanceId, String qSeachFilter, String qUserFilter, String qStatusFilter, String caseId) {
 
 		JsonElement entity = null;
 
 		try {
 			LogOperation client = new LogOperation();
 			client.initializeClient();
-
-			entity = bpmClient.getLogClient().getInstances(hCsrfToken, qModifiedAfter, qModifiedBefore, qProjectFilter);
-//			logger.info(entity);
+			entity = bpmClient.getLogClient().getInstances(hCsrfToken, qModifiedAfter, qModifiedBefore, qProjectFilter, qSeachFilter, qUserFilter, qStatusFilter);
 
 			client.closeClient();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return entity;

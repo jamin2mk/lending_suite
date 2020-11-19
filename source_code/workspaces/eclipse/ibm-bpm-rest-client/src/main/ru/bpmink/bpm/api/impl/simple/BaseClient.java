@@ -1,15 +1,16 @@
 package ru.bpmink.bpm.api.impl.simple;
 
-import com.database.DatabaseUtil;
-import com.google.common.base.MoreObjects;
-import com.google.common.io.ByteStreams;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
-import com.io.gzip.Gzip;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -28,26 +29,20 @@ import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.database.DatabaseUtil;
+import com.google.common.base.MoreObjects;
+import com.google.common.io.ByteStreams;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
+import com.io.gzip.Gzip;
+
 import ru.bpmink.bpm.model.auth.Authentication;
 import ru.bpmink.bpm.model.common.Describable;
 import ru.bpmink.bpm.model.common.RestRootEntity;
 import ru.bpmink.util.Utils;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.net.URI;
-import java.nio.file.StandardCopyOption;
-import java.sql.DriverManager;
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * Base parent class, which contains some configuration constants and common
@@ -108,7 +103,7 @@ abstract class BaseClient {
 			logger.debug("Response body: " + body);
 		}
 	}
-	
+
 	// GET - CsrfToken
 	protected JsonElement makeGet(@Nonnull HttpClient httpClient, @Nullable HttpContext httpContext,
 			@Nonnull URI endpoint, @Nonnull String csrfToken) {
@@ -117,16 +112,16 @@ abstract class BaseClient {
 			HttpGet request = new HttpGet(endpoint);
 			setRequestTimeOut(request, DEFAULT_TIMEOUT);
 			setHeadersGet(request);
-			request.setHeader(BPM_CSRF_TOKEN, csrfToken);
+//			request.setHeader(BPM_CSRF_TOKEN, csrfToken);
 
 			logRequest(request, null);
 
 			HttpResponse response = httpClient.execute(request, httpContext);
-			
-			InputStream content = response.getEntity().getContent();	
+
+			InputStream content = response.getEntity().getContent();
 			InputStreamReader reader = new InputStreamReader(content);
 			JsonElement result = new Gson().fromJson(reader, JsonElement.class);
-			
+
 //			File file = new File("processDetail1.json");
 //		    FileUtils.copyInputStreamToFile(content, file);
 //			String result = Utils.inputStreamToString(content);			
@@ -140,7 +135,7 @@ abstract class BaseClient {
 			throw new RuntimeException("Can't update Entity object from Server with uri " + endpoint, e);
 		}
 	}
-	
+
 	protected <T extends Describable> RestRootEntity<T> makeGet(@Nonnull HttpClient httpClient,
 			@Nullable HttpContext httpContext, @Nonnull URI endpoint, @Nonnull TypeToken<RestRootEntity<T>> typeToken) {
 		try {
@@ -162,24 +157,25 @@ abstract class BaseClient {
 			throw new RuntimeException("Can't get Entity object from Server with uri: " + endpoint, e);
 		}
 	}
-	
+
 	protected <T extends Describable> RestRootEntity<T> makeGet(@Nonnull HttpClient httpClient,
-			@Nullable HttpContext httpContext, @Nonnull URI endpoint, @Nonnull TypeToken<RestRootEntity<T>> typeToken, @Nonnull String csrfToken) {
+			@Nullable HttpContext httpContext, @Nonnull URI endpoint, @Nonnull TypeToken<RestRootEntity<T>> typeToken,
+			@Nonnull String csrfToken) {
 		try {
 			HttpGet request = new HttpGet(endpoint);
 			setRequestTimeOut(request, DEFAULT_TIMEOUT);
 			setHeadersGet(request);
 			request.setHeader(BPM_CSRF_TOKEN, csrfToken);
-			
+
 			logRequest(request, null);
 
 			HttpResponse response = httpClient.execute(request, httpContext);
 //            logger.info("Response: " + Utils.inputStreamToString(response.getEntity().getContent()));
 //			RestRootEntity<T> entity = makeEntity(response, typeToken);
-			
+
 			InputStream content = response.getEntity().getContent();
 			System.out.println(Gzip.compress(ByteStreams.toByteArray(content)).length);
-			
+
 //			File file = new File("processDetail.json");						 
 //		    FileUtils.copyInputStreamToFile(content, file);
 //		    
@@ -190,7 +186,7 @@ abstract class BaseClient {
 			InputStream inputStream = IOUtils.toInputStream(string);
 			Reader variables = new InputStreamReader(inputStream);
 //			DatabaseUtil.CallProcedure("PROCESS_INSTANCE.INSERT_BPM_INSTANCES", variables);
-			
+
 			request.releaseConnection();
 
 			return null;
@@ -300,7 +296,7 @@ abstract class BaseClient {
 			HttpResponse response = httpClient.execute(request, httpContext);
 //            RestRootEntity<T> entity = makeEntity(response, typeToken);
 
-			String result = Utils.inputStreamToString(response.getEntity().getContent());			
+			String result = Utils.inputStreamToString(response.getEntity().getContent());
 
 			request.releaseConnection();
 
@@ -321,7 +317,7 @@ abstract class BaseClient {
 			setHeadersGet(request);
 			request.setHeader(BPM_CSRF_TOKEN, csrfToken);
 
-			//logRequest(request, null);
+			// logRequest(request, null);
 
 			HttpResponse response = httpClient.execute(request, httpContext);
 			String result = Utils.inputStreamToString(response.getEntity().getContent());
@@ -372,10 +368,10 @@ abstract class BaseClient {
 			logRequest(request, null);
 
 			HttpResponse response = httpClient.execute(request, httpContext);
-			
-			InputStream content = response.getEntity().getContent();	
-			
-			String result = Utils.inputStreamToString(content);			
+
+			InputStream content = response.getEntity().getContent();
+
+			String result = Utils.inputStreamToString(content);
 
 			request.releaseConnection();
 
@@ -386,7 +382,7 @@ abstract class BaseClient {
 			throw new RuntimeException("Can't update Entity object from Server with uri " + endpoint, e);
 		}
 	}
-	
+
 	protected String checkSyncProgress(@Nonnull HttpClient httpClient, @Nullable HttpContext httpContext,
 			@Nonnull URI endpoint, @Nonnull String csrfToken) {
 		try {
@@ -410,7 +406,7 @@ abstract class BaseClient {
 			throw new RuntimeException("Can't update Entity object from Server with uri " + endpoint, e);
 		}
 	}
-	
+
 	protected String makeGetWithToken(@Nonnull HttpClient httpClient, @Nullable HttpContext httpContext,
 			@Nonnull URI endpoint, @Nonnull String csrfToken) {
 		try {
@@ -454,22 +450,20 @@ abstract class BaseClient {
 			@Nonnull TypeToken<RestRootEntity<T>> typeToken) {
 		try {
 			Gson gson = new GsonBuilder().setDateFormat(DATE_TIME_FORMAT).create();
-			
+
 			InputStream content = response.getEntity().getContent();
-	
-			File file = new File("processDetail.json");			
-			 
-		    FileUtils.copyInputStreamToFile(content, file);
-				 
-				  
+
+			File file = new File("processDetail.json");
+
+			FileUtils.copyInputStreamToFile(content, file);
+
 			Reader reader = new InputStreamReader(content);
-			
+
 			DatabaseUtil.CallProcedure("PROCESS_INSTANCE.INSERT_BPM_INSTANCES", reader);
-			
+
 			String body = Utils.inputStreamToString(content);
 			logger.info("RESPONSE: " + body);
 			logResponse(response, body);
-			
 
 			RestRootEntity<T> entity = gson.fromJson(reader, typeToken.getType());
 			// In case of system / communication errors body will be empty.
